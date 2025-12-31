@@ -12,8 +12,10 @@ public partial class Cart
     public Guid Id { get; set; }
 
     public Guid UserId { get; set; }
+    public bool IsDeleted { get; set; }
 
     public DateTime? CreatedDate { get; set; }
+
 
     
     public  ICollection<CartItem>? CartItems { get; set; }

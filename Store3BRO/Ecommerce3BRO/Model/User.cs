@@ -34,6 +34,7 @@ public partial class User
     public string? Address { get; set; }
 
     public bool IsActive { get; set; }
+    public bool IsDeleted { get; set; }
 
     public DateTime? CreatedDate { get; set; }
 

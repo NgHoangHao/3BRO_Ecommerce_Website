@@ -98,21 +98,27 @@ namespace Ecommerce3BRO.Repository.Implement
             {
                 return null;
             }
-            _context.User.Remove(findUser);
-            DeletedUser deletedUser = new DeletedUser()
+            findUser.IsDeleted = true;
+            var orders = await _context.Order.Where(o => o.UserId == id).ToListAsync();
+            foreach (var order in orders)
             {
-                Address = findUser.Address,
-                CreatedDate = findUser.CreatedDate,
-                DeletedDate = DateTime.UtcNow,
-                Email = findUser.Email,
-                FullName = findUser.FullName,
-                IsActive = findUser.IsActive,
-                Phone = findUser.Phone,
-                Id = findUser.Id,
-                Password = findUser.Password
-
-            };
-            await _context.DeletedUser.AddAsync(deletedUser);
+                order.Status = 5;
+                var shipments = await _context.Shipment.Where(s => s.OrderId == order.Id).ToListAsync();
+                foreach (var shipment in shipments)
+                {
+                    shipment.Status = 0;
+                }
+                var payments = await _context.Payment.Where(p => p.OrderId == order.Id).ToListAsync();
+                foreach (var payment in payments)
+                {
+                    payment.Status = 0;
+                }
+            }
+            var carts = await _context.Cart.Where(c => c.UserId == id).ToListAsync();
+            foreach (var cart in carts)
+            {
+                cart.IsDeleted = true;
+            }
             await _context.SaveChangesAsync();
             GetUserDTO getUserDTO = new GetUserDTO()
             {
@@ -161,7 +167,7 @@ namespace Ecommerce3BRO.Repository.Implement
 
         public async Task<IEnumerable<GetUserDTO>> GetAllUserAsync()
         {
-            var list = await _context.User.Select(u => new GetUserDTO()
+            var list = await _context.User.Where(u=>u.IsDeleted==false).Select(u => new GetUserDTO()
             {
                 Id = u.Id,
                 Address = u.Address,
@@ -198,7 +204,7 @@ namespace Ecommerce3BRO.Repository.Implement
         {
             if (currentPage <= 0) currentPage = 1;
             if (pageSize <= 0) pageSize = 10;
-            var listOfPage = await _context.User
+            var listOfPage = await _context.User.Where(u => u.IsDeleted == false)
        .OrderByDescending(u => u.CreatedDate)
        .Skip((currentPage - 1) * pageSize)
        .Take(pageSize)

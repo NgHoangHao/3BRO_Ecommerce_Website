@@ -11,6 +11,7 @@ public partial class Category
     public Guid Id { get; set; }
 
     [StringLength(100)]
+    [Required(ErrorMessage = "Please enter category name")]
     public string CategoryName { get; set; }
 
     public string? Description { get; set; }
